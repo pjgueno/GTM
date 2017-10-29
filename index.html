@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Global Terrorism Music</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.2.0/leaflet.css" />    
+    <script src="http://cdn.leafletjs.com/leaflet/v1.2.0/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
+    
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/hexbin.js"></script>
+
+
+
+</head>
+<body>
+<div id="map">  </div>  
+     
+    <script src="js/map.js"></script>
+    
+<button type="button" id="expli" onclick="show()">Show Manual</button>
+
+<div id="erklaerung" onclick="hide()">
+<b><font size="4">The Global Terrorism Music</font></b>
+<br><br>
+Made with the <b>Global Terrorism Database</b>. Credits: National Consortium for the Study of Terrorism and Responses to Terrorism (START). (2017). Global Terrorism Database [Data file]. Retrieved from <a href="https://www.start.umd.edu/gtd">https://www.start.umd.edu/gtd</a>.<br><br>
+
+Firstly, load data. Put a marker on the map and drag it. The position influences the volume and the orientation (left/right) of the sounds, as well as the amount of casualties. Hover the GTM Icon to show the area you can perceive the attacks in.<br><br>
+    
+Click on the legend to choose which type of data you want to visualize.<br><br>
+    
+You can activate and desactivate the sounds with the checkboxes.<br><br>
+    
+The claims are just ISIL's ones.<br><br>
+    
+With the sliders you can modify the speed and the sensitivity. You can also go backward or forward manually.<br><br>
+
+The gradients are recalculated when you zoom or move the map.<br><br>
+
+Click on the legend to switch between the casualties and the types of attack.<br><br>
+    
+On particular dates, some headlines are displayed.<br><br>
+    
+Released under the <a href="https://opensource.org/licenses/GPL-3.0">GNU General Public License, version 3</a>.
+
+</div> 
+    
+<div id='control'>
+    
+<div id='boutons'>
+
+<button id="gtd" type="button" onclick="starthexa()">Play</button>
+<button id="stop" type="button" onclick="pausehexa()">Pause</button>
+<button id="erase" type="button" onclick="erasehexa()">Erase Hexagons</button>  
+<button id="reset_m" type="button" onclick="resetMarker()">Reset Marker</button>
+<button id="reset" type="button" onclick="reset()">Reset all</button>      
+
+<select name="year" size="1" onchange="dataload(this.value)">
+<option value="" disabled selected>Select year</option>
+<option value="0">all</option>
+<option value="2013">2013</option>
+<option value="2014">2014</option>
+<option value="2015">2015</option>
+<option value="2016">2016</option>
+</select>
+
+</div>
+    
+       
+ <table id='results'>
+  <tr>
+    <th>Date</th>
+    <th>Attacks</th>
+    <th>Killed</th>
+    <th>Wounded</th>
+  </tr>
+  <tr>
+    <td id='date'></td>
+    <td id='total_a'>0</td>
+    <td id='total_k'>0</td>
+    <td id='total_w'>0</td>
+  </tr>
+</table>   
+    
+
+<!--<div id="control">Check to play!</div>-->
+
+<table id='sons'>
+  <tr>
+    <th >Weapons</th>
+    <th >Claims</th>
+    <th >Killed</th>
+    <th >Wounded</th>
+  </tr>
+  <tr>
+     <td id='ww'>
+        <input id='c_ww' type="checkbox">
+    </td>
+    <td id='r'>
+        <input id='c_r' type="checkbox">
+    </td>
+    <td id='k'>
+          <input id='c_k' type="checkbox">
+      </td>
+    <td id='w'>
+          <input id='c_w' type="checkbox">
+    </td>
+  </tr>
+</table>   
+    
+    
+    
+    
+    <table id='ranges'>
+  <tr>
+     <td id='range1'>
+         <input class = "slider" id='year' type="range" min="0" max="0" step="1" value="0" oninput="showVal(this.value,'value1')">
+      </td>
+    <td id='value1'></td>
+  </tr>
+  <tr>
+     <td id='range2'>
+        <input class = "slider" id='perimetre' type="range" min="0" max="20000" step="10" value="500" oninput="showVal(this.value,'value2')">
+    </td>
+    <td id='value2'>500 km</td>
+  </tr>
+        <tr>
+     <td id='range3'>
+        <input class = "slider" id='delay' type="range" min="50" max="3000" step="50" value="500" oninput="showVal(this.value,'value3')">
+    </td>
+    <td id='value3'>500 ms</td>
+  </tr>
+</table> 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</div>
+
+
+    
+<div id ='bn'>
+ <div id ='red'>BREAKING NEWS</div>   
+ <div id ='white'></div>   
+    
+    
+
+</div>
+   
+    <table id='legend'>
+        
+        <tr>
+    <td style='background: -webkit-linear-gradient(bottom,transparent 0%, blue 20%, cyan 40%, lime 60%, yellow 80%, red 100%);background: linear-gradient(to top,transparent 0%, blue 20%, cyan 40%, lime 60%, yellow 80%, red 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td  id='cas' onclick="selection('cas')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Casualties
+    </td>
+  </tr>       
+        
+  <tr>
+    <td style='background: -webkit-linear-gradient(bottom,transparent 0%, blue 20%, cyan 40%, lime 60%, yellow 80%, red 100%);background: linear-gradient(to top,transparent 0%, blue 20%, cyan 40%, lime 60%, yellow 80%, red 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td  id='all' onclick="selection('all')" style='background:rgba(255, 255, 255, 0.5);width:150px'>All attacks
+    </td>
+  </tr>             
+        
+    
+  <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #FE0000 100%); background: linear-gradient(to top, transparent 0%, #FE0000 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td   id='ass' onclick="selection('ass')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Assassination
+    </td>
+  </tr>
+        
+   <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #1A08DD 100%);background: linear-gradient(to top, transparent 0%, #1A08DD 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td  id='aa' onclick="selection('aa')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Armed Assault
+    </td>
+  </tr>
+        
+       <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #44FE61 100%);background: linear-gradient(to top, transparent 0%, #44FE61 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td   id='bomb' onclick="selection('bomb')" style='background:rgba(255, 255, 255, 0.5);
+;width:150px'>Bombing/Explosion
+    </td>
+  </tr>
+        
+        <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #FAFE44 100%);background: linear-gradient(to top, transparent 0%, #FAFE44 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td   id='hija' onclick="selection('hija')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Hijacking
+    </td>
+  </tr>
+        
+        <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #FE44E7 100%);background: linear-gradient(to top, transparent 0%, #FE44E7 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td  id='host1' onclick="selection('host1')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Hostage Taking (Barricade Incident)
+    </td>
+  </tr>
+        
+        <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #DA5501 100%);background: linear-gradient(to top, transparent 0%, #DA5501 100%);width:10px;opacity: 0.7;'>
+        </td>
+    <td  id='host2' onclick="selection('host2')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Hostage Taking (Kidnapping)
+    </td>
+  </tr>
+        
+    <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #828282 100%);background: linear-gradient(to top, transparent 0%, #828282 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td   id='atta' onclick="selection('atta')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Facility/Infrastructure Attack
+    </td>
+  </tr>
+        
+        <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #461900 100%);background: linear-gradient(to top, transparent 0%, #461900 100%);width:10px;opacity: 0.7;'>
+    </td>
+    <td   id='ua' onclick="selection('ua')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Unarmed Assault
+    </td>
+  </tr>
+        
+        <tr>
+    <td style='background: -webkit-linear-gradient(bottom, transparent 0%, #7F68B0 100%);background: linear-gradient(to top, transparent 0%, #7F68B0 100%);width:10px;opacity: 0.7;'>
+        
+    </td>
+    <td  id='unkn' onclick="selection('unkn')" style='background:rgba(255, 255, 255, 0.5);width:150px'>Unknown
+    </td>
+  </tr>
+  
+        
+        
+</table>   
+    
+<div class ="legendhexa" id="legendhexa">
+<div id="legend-inner">
+<div class="gradient">
+</div>
+<div class="labels">     
+<div class="label" style="bottom: 100%;" id ="limitmax"><b></b></div>
+<div class="label" style="bottom: 80%;" id ="limit4"><b></b></div>
+<div class="label" style="bottom: 60%;" id ="limit3"><b></b></div>
+<div class="label" style="bottom: 40%;" id ="limit2"><b></b></div>
+<div class="label" style="bottom: 20%;" id ="limit1"><b></b></div>
+<div class="label" style="bottom: 0%;" id ="limit0"><b></b></div>
+</div>
+</div>
+</div>     
+    
+</body>
+</html>
